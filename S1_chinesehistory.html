@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title> 中一中史問答比賽</title>
+    <title> 中一中史廖寶珊盃問答比賽</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
@@ -37,7 +37,7 @@
         <div id="start-page" class="block text-center">
             <div class="bg-white rounded-2xl shadow-md p-6 md:p-8 mt-8">
                 <h1 class="text-3xl font-bold text-blue-600 mb-6"> 中一中史廖寶珊盃問答比賽</h1>
-                <p class="text-gray-700 mb-8">圍繞秦漢歷史知識，隨機抽12題，答對得10分！</p>
+                <p class="text-gray-700 mb-8">圍繞秦漢、周朝歷史知識，隨機抽12題，答對得10分！</p>
                 <button id="start-btn" class="btn-hover bg-green-500 text-white px-8 py-3 rounded-xl font-medium">
                     開始比賽
                 </button>
@@ -108,7 +108,7 @@
     </div>
 
     <script>
-        // 12道秦漢歷史三選一題目數據（隨機從50題中抽取，答案平均分布）
+        // 65道題目數據（秦漢1-50 + 周朝51-65，三選一，答案平均分布）
         const allQuestions = [
             { question: "1. 秦國能統一六國的關鍵策略「遠交近攻」是由哪位客卿提出的？", options: ["A. 商鞅", "B. 范雎", "C. 張儀"], answer: "B" },
             { question: "2. 秦始皇統一天下後，自稱「始皇帝」，其對應的公元前年份是？", options: ["A. 公元前221年", "B. 公元前206年", "C. 公元前202年"], answer: "A" },
@@ -159,84 +159,23 @@
             { question: "47. 漢武帝時期，察舉制的主要選拔標準是？", options: ["A. 家世背景", "B. 孝廉德行", "C. 軍功戰績"], answer: "B" },
             { question: "48. 漢武帝北伐匈奴的關鍵戰役中，深入漠北重創匈奴的是？", options: ["A. 馬邑之戰", "B. 河西之戰", "C. 漠北之戰"], answer: "C" },
             { question: "49. 漢武帝時期，太學的學生被稱為？", options: ["A. 博士弟子員", "B. 諸生", "C. 秀才"], answer: "A" },
-            { question: "50. 張騫出使西域後，打通的中西交通要道被後人稱為？", options: ["A. 玉石之路", "B. 絲綢之路", "C. 香料之路"], answer: "B" }
-
-  {
-    "question": "51. 周朝建立者是哪位君主？",
-    "options": ["A. 周文王", "B. 周武王", "C. 周公"],
-    "answer": "B"
-  },
-  {
-    "question": "52. 西周的都城是？",
-    "options": ["A. 洛邑", "B. 鎬京", "C. 汴京"],
-    "answer": "B"
-  },
-  {
-    "question": "53. 西周推行的主要政治制度是？",
-    "options": ["A. 郡縣制", "B. 封建制", "C. 世襲制"],
-    "answer": "B"
-  },
-  {
-    "question": "54. 第一次封建的主要目的是？",
-    "options": ["A. 鎮壓三監之亂", "B. 安撫商遺民及鞏固統治", "C. 擴張至長江流域"],
-    "answer": "B"
-  },
-  {
-    "question": "55. 「三監之亂」是發生在誰輔政期間？",
-    "options": ["A. 周武王", "B. 周公", "C. 周厲王"],
-    "answer": "B"
-  },
-  {
-    "question": "56. 第二次封建後，哪個族群的諸侯數量最多？",
-    "options": ["A. 功臣", "B. 姬姓宗室", "C. 殷商後裔"],
-    "answer": "B"
-  },
-  {
-    "question": "57. 烽火戲諸侯的君主是？",
-    "options": ["A. 周平王", "B. 周幽王", "C. 周厲王"],
-    "answer": "B"
-  },
-  {
-    "question": "58. 標誌東周開始的事件是？",
-    "options": ["A. 武王伐紂", "B. 平王東遷", "C. 三家分晉"],
-    "answer": "B"
-  },
-  {
-    "question": "59. 春秋時代的名稱來源於哪本書？",
-    "options": ["A. 《尚書》", "B. 《春秋》", "C. 《左傳》"],
-    "answer": "B"
-  },
-  {
-    "question": "60. 封建制度下，諸侯需要向周天子承擔哪項義務？",
-    "options": ["A. 繳納稅收", "B. 定期朝貢", "C. 提供勞力"],
-    "answer": "B"
-  },
-  {
-    "question": "61. 商朝的文字主要刻在龜甲和獸骨上，稱為？",
-    "options": ["A. 金文", "B. 小篆", "C. 甲骨文"],
-    "answer": "C"
-  },
-  {
-    "question": "62. 以下哪一項不是封建制度的輔行制度？",
-    "options": ["A. 宗法制度", "B. 禮樂制度", "C. 郡縣制度"],
-    "answer": "C"
-  },
-  {
-    "question": "63. 負責監視殷商遺民的「三監」不包括？",
-    "options": ["A. 管叔", "B. 蔡叔", "C. 周公"],
-    "answer": "C"
-  },
-  {
-    "question": "64. 東周分為春秋和哪一個時期？",
-    "options": ["A. 戰國", "B. 南北朝", "C. 五代"],
-    "answer": "A"
-  },
-  {
-    "question": "65. 西周滅亡的直接原因是？",
-    "options": ["A. 犬戎入侵", "B. 諸侯割據", "C. 洪水泛濫"],
-    "answer": "A"
-  }
-
+            { question: "50. 張騫出使西域後，打通的中西交通要道被後人稱為？", options: ["A. 玉石之路", "B. 絲綢之路", "C. 香料之路"], answer: "B" },
+            // 周朝51-65題
+            { question: "51. 周朝建立者是哪位君主？", options: ["A. 周文王", "B. 周武王", "C. 周公"], answer: "B" },
+            { question: "52. 西周的都城是？", options: ["A. 洛邑", "B. 鎬京", "C. 汴京"], answer: "B" },
+            { question: "53. 西周推行的主要政治制度是？", options: ["A. 郡縣制", "B. 封建制", "C. 世襲制"], answer: "B" },
+            { question: "54. 第一次封建的主要目的是？", options: ["A. 鎮壓三監之亂", "B. 安撫商遺民及鞏固統治", "C. 擴張至長江流域"], answer: "B" },
+            { question: "55. 「三監之亂」是發生在誰輔政期間？", options: ["A. 周武王", "B. 周公", "C. 周厲王"], answer: "B" },
+            { question: "56. 第二次封建後，哪個族群的諸侯數量最多？", options: ["A. 功臣", "B. 先聖後裔", "C. 姬姓宗室"], answer: "C" },
+            { question: "57. 烽火戲諸侯的君主是？", options: ["A. 周平王", "B. 周幽王", "C. 周厲王"], answer: "B" },
+            { question: "58. 標誌東周開始的事件是？", options: ["A. 武王伐紂", "B. 平王東遷", "C. 三家分晉"], answer: "B" },
+            { question: "59. 春秋時代的名稱來源於哪本書？", options: ["A. 《尚書》", "B. 《春秋》", "C. 《左傳》"], answer: "B" },
+            { question: "60. 封建制度下，諸侯需要向周天子承擔哪項義務？", options: ["A. 繳納稅收", "B. 定期朝貢", "C. 提供勞力"], answer: "B" },
+            { question: "61. 商朝的文字主要刻在龜甲和獸骨上，稱為？", options: ["A. 金文", "B. 小篆", "C. 甲骨文"], answer: "C" },
+            { question: "62. 以下哪一項不是封建制度的輔行制度？", options: ["A. 宗法制度", "B. 禮樂制度", "C. 郡縣制度"], answer: "C" },
+            { question: "63. 負責監視殷商遺民的「三監」不包括？", options: ["A. 管叔", "B. 蔡叔", "C. 周公"], answer: "C" },
+            { question: "64. 東周分為春秋和哪一個時期？", options: ["A. 戰國", "B. 南北朝", "C. 五代"], answer: "A" },
+            { question: "65. 西周滅亡的直接原因是？", options: ["A. 犬戎入侵", "B. 諸侯割據", "C. 洪水泛濫"], answer: "A" }
         ];
 
         // 遊戲狀態變量
@@ -420,7 +359,7 @@
                 if (score >= 108) levelText = `<span class='text-green-600'>${studentName}，超級厲害！獲得金獎！</span>`;
                 else if (score >= 84) levelText = `<span class='text-blue-600'>${studentName}，好叻呀！獲得銀獎！</span>`;
                 else if (score >= 60) levelText = `<span class='text-gray-700'>${studentName}，繼續努力，下次爭取更好成績！</span>`;
-                else levelText = `<span class='text-red-500'>${studentName}，今次要加油，多溫習秦漢歷史！</span>`;
+                else levelText = `<span class='text-red-500'>${studentName}，今次要加油，多溫習歷史！</span>`;
                 levelElement.innerHTML = levelText;
                 // 播放最終成績
                 playFinalScore();
