@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> 中一中史問答比賽</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-size: 25px !important;
+        }
+        .btn-hover {
+            transition: all 0.3s ease;
+        }
+        .btn-hover:hover {
+            transform: scale(1.02);
+        }
+        .option-active {
+            background-color: #d1d5db !important;
+            border-color: #9ca3af !important;
+        }
+        .option-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .speak-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <div class="max-w-3xl mx-auto p-4 md:p-6">
+        <!-- 開始頁 -->
+        <div id="start-page" class="block text-center">
+            <div class="bg-white rounded-2xl shadow-md p-6 md:p-8 mt-8">
+                <h1 class="text-3xl font-bold text-blue-600 mb-6"> 中一中史廖寶珊盃問答比賽</h1>
+                <p class="text-gray-700 mb-8">圍繞秦漢歷史知識，隨機抽12題，答對得10分！</p>
+                <button id="start-btn" class="btn-hover bg-green-500 text-white px-8 py-3 rounded-xl font-medium">
+                    開始比賽
+                </button>
+            </div>
+        </div>
+
+        <!-- 答題頁 -->
+        <div id="quiz-page" class="hidden">
+            <div class="bg-white rounded-2xl shadow-md p-5 md:p-6 mt-4">
+                <!-- 得分與進度 -->
+                <div class="flex flex-wrap justify-between items-center mb-6 gap-2">
+                    <div class="font-semibold text-blue-600">
+                        當前得分：<span id="score">0</span> 分
+                    </div>
+                    <div class="font-semibold text-gray-700">
+                        第 <span id="current-question">1</span>/12 題
+                    </div>
+                </div>
+
+                <!-- 題目 + 讀題按鈕 -->
+                <div class="flex flex-col md:flex-row md:items-center gap-4 mb-6">
+                    <div class="font-medium text-gray-800 flex-1" id="question-text">
+                        加載中...
+                    </div>
+                    <button id="question-speak-btn" class="btn-hover speak-btn bg-orange-500 text-white px-4 py-2 rounded-lg font-medium text-base">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                        讀題
+                    </button>
+                </div>
+
+                <!-- 語音狀態提示 -->
+                <div id="speak-tip" class="hidden text-base text-orange-500 text-center mb-4">
+                    正在播放語音...
+                </div>
+
+                <!-- 選項（每個選項一行） -->
+                <div class="flex flex-col gap-4 mb-6" id="options-container">
+                    <!-- 選項動態生成 -->
+                </div>
+
+                <!-- 反饋信息 -->
+                <div id="feedback" class="hidden font-medium text-center mb-6"></div>
+
+                <!-- 下一題按鈕 -->
+                <button id="next-btn" class="btn-hover bg-blue-500 text-white px-8 py-3 rounded-xl font-medium w-full hidden">
+                    下一題
+                </button>
+            </div>
+        </div>
+
+        <!-- 結束頁 -->
+        <div id="end-page" class="hidden text-center">
+            <div class="bg-white rounded-2xl shadow-md p-6 md:p-8 mt-8">
+                <h1 class="text-3xl font-bold text-blue-600 mb-6">比賽結束！</h1>
+                <div class="text-gray-800 mb-6">
+                    你的最終得分：<span id="final-score" class="font-bold">0</span> 分（滿分120分）
+                </div>
+                <div class="font-medium mb-8" id="level评价">
+                    <!-- 評價動態生成 -->
+                </div>
+                <button id="restart-btn" class="btn-hover bg-green-500 text-white px-8 py-3 rounded-xl font-medium">
+                    重新挑戰
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 12道秦漢歷史三選一題目數據（隨機從50題中抽取，答案平均分布）
+        const allQuestions = [
+            { question: "1. 秦國能統一六國的關鍵策略「遠交近攻」是由哪位客卿提出的？", options: ["A. 商鞅", "B. 范雎", "C. 張儀"], answer: "B" },
+            { question: "2. 秦始皇統一天下後，自稱「始皇帝」，其對應的公元前年份是？", options: ["A. 公元前221年", "B. 公元前206年", "C. 公元前202年"], answer: "A" },
+            { question: "3. 秦朝中央政府中，負責掌管軍事的官職是？", options: ["A. 丞相", "B. 太尉", "C. 御史大夫"], answer: "B" },
+            { question: "4. 秦始皇統一文字時，命李斯制定的標準字體是？", options: ["A. 隸書", "B. 小篆", "C. 大篆"], answer: "B" },
+            { question: "5. 秦朝實行的「連坐法」規定，一家犯法時，下列哪種情況會受罰？", options: ["A. 鄰居知情不報", "B. 親屬異地居住", "C. 官吏延遲審理"], answer: "A" },
+            { question: "6. 秦始皇統一貨幣後，作為「上幣」的是？", options: ["A. 銅錢", "B. 黃金", "C. 布幣"], answer: "B" },
+            { question: "7. 秦朝修築的萬里長城，西起臨洮，東至何處？", options: ["A. 咸陽", "B. 遼東", "C. 臨淄"], answer: "B" },
+            { question: "8. 為開發嶺南，秦始皇下令開鑿的水利工程是？", options: ["A. 鴻溝", "B. 靈渠", "C. 都江堰"], answer: "B" },
+            { question: "9. 秦始皇焚書坑儒時，未被焚毀的書籍類型是？", options: ["A. 諸子百家著作", "B. 醫藥占卜書籍", "C. 六國史書"], answer: "B" },
+            { question: "10. 秦朝滅亡的直接原因是？", options: ["A. 陳勝吳廣起義", "B. 項羽巨鹿之戰取勝", "C. 劉邦攻入咸陽"], answer: "A" },
+            { question: "11. 秦二世時獨攬大權，並上演「指鹿為馬」的宦官是？", options: ["A. 趙高", "B. 李斯", "C. 馮去疾"], answer: "A" },
+            { question: "12. 秦朝郡縣制中，郡的下級行政單位是？", options: ["A. 鄉", "B. 縣", "C. 里"], answer: "B" },
+            { question: "13. 秦始皇派軍北伐匈奴時，動用的兵力約為？", options: ["A. 30萬人", "B. 50萬人", "C. 70萬人"], answer: "A" },
+            { question: "14. 秦朝的「半兩錢」屬於哪一類貨幣？", options: ["A. 上幣", "B. 下幣", "C. 中幣"], answer: "B" },
+            { question: "15. 下列哪項不是秦朝統治的負面影響？", options: ["A. 壓制思想自由", "B. 奠定中國版圖", "C. 民生困苦"], answer: "B" },
+            { question: "16. 陳勝吳廣起義的起因是？", options: ["A. 稅賦過重", "B. 逾期戍邊獲死罪", "C. 土地兼併嚴重"], answer: "B" },
+            { question: "17. 秦國滅六國的順序中，最先被消滅的國家是？", options: ["A. 韓", "B. 趙", "C. 魏"], answer: "A" },
+            { question: "18. 秦朝負責監察百官的官職是？", options: ["A. 廷尉", "B. 御史大夫", "C. 治粟內史"], answer: "B" },
+            { question: "19. 秦始皇陵兵馬俑中，負責指揮的是哪個坑的陶俑？", options: ["A. 一號坑", "B. 二號坑", "C. 三號坑"], answer: "C" },
+            { question: "20. 秦朝滅亡後，子嬰向哪位起義軍首領投降？", options: ["A. 項羽", "B. 劉邦", "C. 陳勝"], answer: "B" },
+            { question: "21. 楚漢相爭中，劉邦與百姓約法三章，其核心是？", options: ["A. 減輕賦稅", "B. 殺人抵命、傷人及盜抵罪", "C. 廢除苛法"], answer: "B" },
+            { question: "22. 項羽在巨鹿之戰中採取的激勵士氣的策略是？", options: ["A. 破釜沉舟", "B. 聲東擊西", "C. 圍魏救趙"], answer: "A" },
+            { question: "23. 楚漢相爭的分界線「鴻溝」位於今哪個地區？", options: ["A. 河南榮陽", "B. 陝西咸陽", "C. 河北巨鹿"], answer: "A" },
+            { question: "24. 公元前202年，劉邦擊敗項羽的決定性戰役是？", options: ["A. 巨鹿之戰", "B. 垓下之戰", "C. 彭城之戰"], answer: "B" },
+            { question: "25. 劉邦建立西漢後，定都於？", options: ["A. 洛陽", "B. 咸陽", "C. 長安"], answer: "C" },
+            { question: "26. 西漢初年推行「無為而治」政策的理論依據來自哪一學派？", options: ["A. 儒家", "B. 道家", "C. 法家"], answer: "B" },
+            { question: "27. 漢高祖劉邦為鞏固政權，實行的地方制度是？", options: ["A. 郡縣制", "B. 郡國並行制", "C. 封建制"], answer: "B" },
+            { question: "28. 西漢「文景之治」時期，統治者的核心政策是？", options: ["A. 窮兵黷武", "B. 與民休息", "C. 重農抑商"], answer: "B" },
+            { question: "29. 漢文帝和漢景帝時期，減輕百姓賦稅，最終田稅減至？", options: ["A. 什五稅一", "B. 三十稅一", "C. 什一稅"], answer: "B" },
+            { question: "30. 西漢初年，為對付匈奴，朝廷採取的主要政策是？", options: ["A. 北伐匈奴", "B. 和親政策", "C. 修築長城"], answer: "B" },
+            { question: "31. 漢高祖劉邦消滅的異姓諸侯中，有「兵仙」之稱的是？", options: ["A. 韓信", "B. 彭越", "C. 英布"], answer: "A" },
+            { question: "32. 西漢初年，蕭何為劉邦制定的法律是？", options: ["A. 《秦律》", "B. 《九章律》", "C. 《漢律》"], answer: "B" },
+            { question: "33. 楚漢相爭中，項羽最終自刎的地點是？", options: ["A. 鴻溝", "B. 烏江", "C. 垓下"], answer: "B" },
+            { question: "34. 劉邦能奪取天下的關鍵原因不包括？", options: ["A. 善用人才", "B. 殘暴嗜殺", "C. 贏得民心"], answer: "B" },
+            { question: "35. 西漢初年，天子出行甚至找不到四匹同色馬，反映當時的社會狀況是？", options: ["A. 物資充裕", "B. 物資缺乏", "C. 馬匹專供軍用"], answer: "B" },
+            { question: "36. 漢武帝接受董仲舒的建議，推行的思想政策是？", options: ["A. 罷黜百家，獨尊儒術", "B. 儒法並用", "C. 無為而治"], answer: "A" },
+            { question: "37. 漢武帝建立「士人政府」的主要途徑不包括？", options: ["A. 設立太學", "B. 察舉制", "C. 世襲制"], answer: "C" },
+            { question: "38. 漢武帝時期，負責教授儒家經典的「五經博士」不包括下列哪部經書？", options: ["A. 《論語》", "B. 《詩經》", "C. 《春秋》"], answer: "A" },
+            { question: "39. 漢武帝北伐匈奴時，率軍收復河套地區的將領是？", options: ["A. 霍去病", "B. 衛青", "C. 李廣"], answer: "B" },
+            { question: "40. 漢武帝派張騫第一次出使西域的目的是？", options: ["A. 聯絡大月氏夾擊匈奴", "B. 開通貿易路線", "C. 探尋西域物產"], answer: "A" },
+            { question: "41. 張騫第一次出使西域時，被匈奴拘禁的時間約為？", options: ["A. 五年", "B. 十年", "C. 十五年"], answer: "B" },
+            { question: "42. 漢武帝時期，設置的河西四郡不包括？", options: ["A. 武威", "B. 張掖", "C. 咸陽"], answer: "C" },
+            { question: "43. 漢武帝為解決諸侯王勢力過大的問題，推行的政策是？", options: ["A. 推恩令", "B. 削藩令", "C. 遷徙令"], answer: "A" },
+            { question: "44. 漢武帝時期，負責管理全國財政的官職是？", options: ["A. 治粟內史", "B. 少府", "C. 大司農"], answer: "C" },
+            { question: "45. 下列哪項不是漢武帝的文治成就？", options: ["A. 獨尊儒術", "B. 開拓疆土", "C. 與民休息"], answer: "C" },
+            { question: "46. 漢武帝派張騫第二次出使西域的時間是？", options: ["A. 公元前138年", "B. 公元前119年", "C. 公元前115年"], answer: "B" },
+            { question: "47. 漢武帝時期，察舉制的主要選拔標準是？", options: ["A. 家世背景", "B. 孝廉德行", "C. 軍功戰績"], answer: "B" },
+            { question: "48. 漢武帝北伐匈奴的關鍵戰役中，深入漠北重創匈奴的是？", options: ["A. 馬邑之戰", "B. 河西之戰", "C. 漠北之戰"], answer: "C" },
+            { question: "49. 漢武帝時期，太學的學生被稱為？", options: ["A. 博士弟子員", "B. 諸生", "C. 秀才"], answer: "A" },
+            { question: "50. 張騫出使西域後，打通的中西交通要道被後人稱為？", options: ["A. 玉石之路", "B. 絲綢之路", "C. 香料之路"], answer: "B" }
+
+  {
+    "question": "51. 周朝建立者是哪位君主？",
+    "options": ["A. 周文王", "B. 周武王", "C. 周公"],
+    "answer": "B"
+  },
+  {
+    "question": "52. 西周的都城是？",
+    "options": ["A. 洛邑", "B. 鎬京", "C. 汴京"],
+    "answer": "B"
+  },
+  {
+    "question": "53. 西周推行的主要政治制度是？",
+    "options": ["A. 郡縣制", "B. 封建制", "C. 世襲制"],
+    "answer": "B"
+  },
+  {
+    "question": "54. 第一次封建的主要目的是？",
+    "options": ["A. 鎮壓三監之亂", "B. 安撫商遺民及鞏固統治", "C. 擴張至長江流域"],
+    "answer": "B"
+  },
+  {
+    "question": "55. 「三監之亂」是發生在誰輔政期間？",
+    "options": ["A. 周武王", "B. 周公", "C. 周厲王"],
+    "answer": "B"
+  },
+  {
+    "question": "56. 第二次封建後，哪個族群的諸侯數量最多？",
+    "options": ["A. 功臣", "B. 姬姓宗室", "C. 殷商後裔"],
+    "answer": "B"
+  },
+  {
+    "question": "57. 烽火戲諸侯的君主是？",
+    "options": ["A. 周平王", "B. 周幽王", "C. 周厲王"],
+    "answer": "B"
+  },
+  {
+    "question": "58. 標誌東周開始的事件是？",
+    "options": ["A. 武王伐紂", "B. 平王東遷", "C. 三家分晉"],
+    "answer": "B"
+  },
+  {
+    "question": "59. 春秋時代的名稱來源於哪本書？",
+    "options": ["A. 《尚書》", "B. 《春秋》", "C. 《左傳》"],
+    "answer": "B"
+  },
+  {
+    "question": "60. 封建制度下，諸侯需要向周天子承擔哪項義務？",
+    "options": ["A. 繳納稅收", "B. 定期朝貢", "C. 提供勞力"],
+    "answer": "B"
+  },
+  {
+    "question": "61. 商朝的文字主要刻在龜甲和獸骨上，稱為？",
+    "options": ["A. 金文", "B. 小篆", "C. 甲骨文"],
+    "answer": "C"
+  },
+  {
+    "question": "62. 以下哪一項不是封建制度的輔行制度？",
+    "options": ["A. 宗法制度", "B. 禮樂制度", "C. 郡縣制度"],
+    "answer": "C"
+  },
+  {
+    "question": "63. 負責監視殷商遺民的「三監」不包括？",
+    "options": ["A. 管叔", "B. 蔡叔", "C. 周公"],
+    "answer": "C"
+  },
+  {
+    "question": "64. 東周分為春秋和哪一個時期？",
+    "options": ["A. 戰國", "B. 南北朝", "C. 五代"],
+    "answer": "A"
+  },
+  {
+    "question": "65. 西周滅亡的直接原因是？",
+    "options": ["A. 犬戎入侵", "B. 諸侯割據", "C. 洪水泛濫"],
+    "answer": "A"
+  }
+
+        ];
+
+        // 遊戲狀態變量
+        let randomQuestions = []; // 隨機抽取的12題
+        let currentIndex = 0; // 當前題目索引
+        let score = 0; // 分數
+        let selectedOption = null; // 選中選項
+        const speechSynthesis = window.speechSynthesis || null; // 語音合成實例
+        const studentName = ""; // 學生名字
+
+        // DOM元素獲取
+        const startPage = document.getElementById("start-page");
+        const quizPage = document.getElementById("quiz-page");
+        const endPage = document.getElementById("end-page");
+        const startBtn = document.getElementById("start-btn");
+        const nextBtn = document.getElementById("next-btn");
+        const restartBtn = document.getElementById("restart-btn");
+        const questionSpeakBtn = document.getElementById("question-speak-btn");
+        const speakTip = document.getElementById("speak-tip");
+        const questionText = document.getElementById("question-text");
+        const optionsContainer = document.getElementById("options-container");
+        const feedback = document.getElementById("feedback");
+        const scoreElement = document.getElementById("score");
+        const currentQuestionElement = document.getElementById("current-question");
+        const finalScoreElement = document.getElementById("final-score");
+        const levelElement = document.getElementById("level评价");
+
+        // 粵語語音播放函數
+        function playCantonese(text, onEndCallback = null) {
+            if (!speechSynthesis) {
+                alert("你的瀏覽器不支持語音功能，請使用Chrome或Edge瀏覽器～");
+                return;
+            }
+            // 停止之前的語音
+            if (speechSynthesis.speaking) {
+                speechSynthesis.cancel();
+            }
+            // 顯示語音狀態
+            speakTip.classList.remove("hidden");
+            // 配置粵語語音
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = "zh-HK"; // 香港粵語
+            utterance.rate = 0.9; // 語速稍慢
+            utterance.pitch = 1.1; // 音調自然
+            // 語音結束回調
+            utterance.onend = () => {
+                speakTip.classList.add("hidden");
+                if (onEndCallback) onEndCallback();
+            };
+            speechSynthesis.speak(utterance);
+        }
+
+        // 播放開場歡迎語
+        function playWelcome() {
+            const welcomeText = "歡迎黎到中一中史廖寶珊盃問答比賽，比賽馬上開始";
+            playCantonese(welcomeText, () => {
+                // 加載第一題
+                loadCurrentQuestion();
+                quizPage.classList.remove("hidden");
+                startPage.classList.add("hidden");
+            });
+        }
+
+        // 播放題目語音
+        function playQuestionSpeech() {
+            const currentQ = randomQuestions[currentIndex];
+            const pureQuestion = currentQ.question.replace(/^\d+\.\s*/, ""); // 去除題號
+            playCantonese(pureQuestion);
+        }
+
+        // 播放答題反饋+正確答案
+        function playFeedback(isCorrect, correctOption) {
+            // 個性化反饋
+            const feedbackText = isCorrect 
+                ? `${studentName}，答啱左！` 
+                : `${studentName}，咁都錯！`;
+            // 先播反饋，再播正確答案
+            playCantonese(feedbackText, () => {
+                const answerText = `正確答案係：${correctOption}`;
+                playCantonese(answerText);
+            });
+        }
+
+        // 播放最終成績
+        function playFinalScore() {
+            const scoreText = `${studentName}，你今次嘅最終得分係${score}分，滿分120分！`;
+            playCantonese(scoreText);
+        }
+
+        // 隨機抽取12題（確保A、B、C答案大致均分）
+        function getRandomQuestions() {
+            // 按答案分組
+            const groupA = allQuestions.filter(q => q.answer === "A");
+            const groupB = allQuestions.filter(q => q.answer === "B");
+            const groupC = allQuestions.filter(q => q.answer === "C");
+            
+            // 各抽取4題，確保均分（12題總數）
+            const selectedA = groupA.sort(() => 0.5 - Math.random()).slice(0, 4);
+            const selectedB = groupB.sort(() => 0.5 - Math.random()).slice(0, 4);
+            const selectedC = groupC.sort(() => 0.5 - Math.random()).slice(0, 4);
+            
+            // 合併後打亂順序
+            return [...selectedA, ...selectedB, ...selectedC].sort(() => 0.5 - Math.random());
+        }
+
+        // 加載當前題目
+        function loadCurrentQuestion() {
+            const currentQ = randomQuestions[currentIndex];
+            // 顯示題目
+            questionText.textContent = currentQ.question;
+            // 清空選項容器
+            optionsContainer.innerHTML = "";
+            // 隱藏反饋和下一題按鈕
+            feedback.classList.add("hidden");
+            nextBtn.classList.add("hidden");
+            selectedOption = null;
+            // 生成三個選項
+            currentQ.options.forEach((option, index) => {
+                const optionItem = document.createElement("div");
+                optionItem.className = "option-item border-2 border-gray-300 rounded-xl px-4 py-3 bg-white";
+                // 選項文本
+                const optionText = document.createElement("span");
+                optionText.textContent = option;
+                // 組裝選項元素
+                optionItem.appendChild(optionText);
+                // 選項點擊事件
+                optionItem.addEventListener("click", () => {
+                    // 清除其他選項選中狀態
+                    document.querySelectorAll(".option-item").forEach(item => {
+                        item.classList.remove("option-active");
+                    });
+                    // 選中當前選項
+                    optionItem.classList.add("option-active");
+                    selectedOption = String.fromCharCode(65 + index); // A/B/C
+                    checkAnswer();
+                });
+                optionsContainer.appendChild(optionItem);
+            });
+            // 更新進度和分數
+            currentQuestionElement.textContent = currentIndex + 1;
+            scoreElement.textContent = score;
+        }
+
+        // 檢查答案
+        function checkAnswer() {
+            const currentQ = randomQuestions[currentIndex];
+            // 鎖定所有選項
+            document.querySelectorAll(".option-item").forEach(item => {
+                item.style.pointerEvents = "none";
+            });
+            // 獲取正確選項文本
+            const correctOption = currentQ.options.find(opt => opt.startsWith(currentQ.answer));
+            // 判斷對錯
+            const isCorrect = selectedOption === currentQ.answer;
+            if (isCorrect) {
+                score += 10;
+                feedback.textContent = `${studentName}，答對啦！正確答案：${correctOption} | 當前得分：${score}分`;
+                feedback.className = "font-medium text-center mb-6 text-green-500";
+            } else {
+                feedback.textContent = `${studentName}，答錯咗～正確答案：${correctOption} | 當前得分：${score}分`;
+                feedback.className = "font-medium text-center mb-6 text-red-500";
+            }
+            // 顯示反饋和下一題按鈕
+            feedback.classList.remove("hidden");
+            nextBtn.classList.remove("hidden");
+            scoreElement.textContent = score;
+            // 播放反饋語音
+            playFeedback(isCorrect, correctOption);
+        }
+
+        // 下一題
+        function goToNextQuestion() {
+            currentIndex++;
+            if (currentIndex >= randomQuestions.length) {
+                // 結束頁
+                quizPage.classList.add("hidden");
+                endPage.classList.remove("hidden");
+                finalScoreElement.textContent = score;
+                // 生成評價（120分制）
+                let levelText = "";
+                if (score >= 108) levelText = `<span class='text-green-600'>${studentName}，超級厲害！獲得金獎！</span>`;
+                else if (score >= 84) levelText = `<span class='text-blue-600'>${studentName}，好叻呀！獲得銀獎！</span>`;
+                else if (score >= 60) levelText = `<span class='text-gray-700'>${studentName}，繼續努力，下次爭取更好成績！</span>`;
+                else levelText = `<span class='text-red-500'>${studentName}，今次要加油，多溫習秦漢歷史！</span>`;
+                levelElement.innerHTML = levelText;
+                // 播放最終成績
+                playFinalScore();
+            } else {
+                // 加載下一題
+                loadCurrentQuestion();
+            }
+        }
+
+        // 重置遊戲
+        function restartGame() {
+            randomQuestions = getRandomQuestions();
+            currentIndex = 0;
+            score = 0;
+            selectedOption = null;
+            // 隱藏結束頁，播放歡迎語
+            endPage.classList.add("hidden");
+            playWelcome();
+        }
+
+        // 事件監聽
+        startBtn.addEventListener("click", () => {
+            randomQuestions = getRandomQuestions();
+            playWelcome();
+        });
+        nextBtn.addEventListener("click", goToNextQuestion);
+        restartBtn.addEventListener("click", restartGame);
+        questionSpeakBtn.addEventListener("click", playQuestionSpeech);
+    </script>
+</body>
+</html>
